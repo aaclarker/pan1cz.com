@@ -3,6 +3,7 @@ import { CognitoUserPool, AuthenticationDetails, CognitoUser } from 'amazon-cogn
 import React from 'react'
 import { Form, FormGroup, FormControl, ControlLabel, Col, Checkbox, Button } from 'react-bootstrap'
 import './Login.css'
+import { Redirect } from 'react-router'
 
 class Login extends React.Component {
   constructor() {
@@ -11,7 +12,8 @@ class Login extends React.Component {
       username: '',
       password: '',
       isLoggedIn: false,
-      mustResetPassword: false
+      mustResetPassword: false,
+      fireRedirect: false
     }
 
     this.userPool = new CognitoUserPool({
@@ -45,7 +47,9 @@ class Login extends React.Component {
     return new Promise((resolve, reject) => {
       this.user.authenticateUser(authenticationDetails, {
         onSuccess: result => {
-          return resolve(this.setSession(result))
+          // return resolve(this.setSession(result))
+          this.setSession(result)
+          this.setState({ fireRedirect: true })
         },
         onFailure: function(err) {
           // User authentication was not successful
@@ -101,6 +105,9 @@ class Login extends React.Component {
   }
 
   render() {
+    const { from } = this.props.location.state || '/'
+    const { fireRedirect } = this.state
+
     const newPasswordForm = (
       <div className="loginForm">
         <Form horizontal onSubmit={this.handlePasswordSubmit}>
@@ -193,6 +200,7 @@ class Login extends React.Component {
             </Col>
           </FormGroup>
         </Form>
+        {fireRedirect && <Redirect to={from || '/'} />}
       </div>
     )
 
